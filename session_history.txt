@@ -1,0 +1,153 @@
+docker exec autonomous-factory-v6 curl http://172.17.0.1:8085/v1/models
+ls -la /bin/bash /usr/bin/bash
+ls ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/
+mkdir -p ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/
+cat > ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json << 'EOF'
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "/home/indigo/venv_mcp_searxng/bin/mcp-searxng",
+      "env": {"SEARXNG_URL": "http://172.17.0.1:8080"}
+    }
+  }
+}
+EOF
+
+pip --version
+pip install mcp-searxng --break-system-packages
+python3 -m venv /root/venv_mcp_searxng && /root/venv_mcp_searxng/bin/pip install searxng-mcp
+cat > ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json << 'EOF'
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "/root/venv_mcp_searxng/bin/searxng-mcp",
+      "env": {"SEARXNG_URL": "http://172.17.0.1:8080"}
+    }
+  }
+}
+EOF
+
+find /root -name "cline_mcp_settings.json" 2>/dev/null
+cp ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json ~/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json
+ls -la /root/venv_mcp_searxng/bin/
+/root/venv_mcp_searxng/bin/searxng-mcp 2>&1 | head -5
+node --version
+node --version
+npm install -g mcp-searxng
+cat > ~/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json << 'EOF'
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "mcp-searxng",
+      "env": {"SEARXNG_URL": "http://172.17.0.1:8080"}
+    }
+  }
+}
+EOF
+
+which mcp-searxng
+cat > ~/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json << 'EOF'
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "/usr/local/bin/mcp-searxng",
+      "env": {"SEARXNG_URL": "http://172.17.0.1:8080"}
+    }
+  }
+}
+EOF
+
+ls
+cd Desktop/
+ls
+cd Cline/
+ls
+cd ..
+ls
+python3 shiritori.py
+cd /root/Desktop && python3 shiritori.py
+ls
+node --version && which node
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install nodejs -y
+node --version
+npm install -g mcp-searxng
+which mcp-searxng
+cat /workspace/.clinerules 2>/dev/null || echo "ファイルなし"
+cat > /workspace/.clinerules << 'EOF'
+# Cline 動作ルール
+
+## 言語
+- 返信・コメント・コミットメッセージは全て日本語で記述すること
+
+## プロジェクト管理
+- 作業は必ずプロジェクト専用フォルダ（/workspace/<プロジェクト名>/）を作成してその中で行うこと
+- プロジェクトフォルダ外にファイルを生成・編集しないこと
+
+## Python実行ポリシー
+- Pythonを使用する場合は必ずプロジェクトフォルダ内に仮想環境（venv）を作成すること
+- 仮想環境外でのpip installおよびPython実行を禁止する
+- グローバル環境へのパッケージインストールを行わないこと
+
+## 隔離ポリシー（最重要）
+- コンテナ外（ホストOS）への一切の書き込み・変更を禁止する
+- /workspace および /models 以外のパスへの書き込みを行わないこと
+- ホストのファイルシステムに影響を与える操作を実行しないこと
+
+## タスク着手前の計画確認
+- 大きなタスクはPlanモードで設計・手順を提示し、承認を得てからActモードで実装すること
+- 不明点がある場合は実装前に必ず質問すること
+
+## Gitコミットルール
+- 機能完成・バグ修正などの節目ごとに必ずgit commitを行うこと
+- コミットメッセージは日本語で変更内容を簡潔に記述すること
+
+## 新規依存パッケージの事前確認
+- pip install・npm install等の新規パッケージ導入は必ず事前に確認を取ること
+
+## READMEの自動生成
+- プロジェクト完了時に /workspace/<プロジェクト名>/README.md を必ず作成すること
+- README には目的・使用方法・依存パッケージ・実行手順を記載すること
+EOF
+
+ls
+ls /workspace/
+cd ?
+cd /
+ls
+cat /etc/hostname
+cd /
+cat /etc/hostname
+ls /workspace/
+find / -name ".clinerules" 2>/dev/null
+cat /workspace/.clinerules
+exit
+cat /root/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json
+git init ~/workspace && git -C ~/workspace commit --allow-empty -m "init"
+git config --global user.email "cline@local" && git config --global user.name "Cline"
+git -C ~/workspace commit --allow-empty -m "init"
+node --version && curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install nodejs -y
+node --version
+cat > ~/.vscode-server/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json << 'EOF'
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "npx",
+      "args": ["-y", "mcp-searxng"],
+      "env": {"SEARXNG_URL": "http://172.17.0.1:8080"}
+    }
+  }
+}
+EOF
+
+curl -s "http://172.17.0.1:8080/search?q=test&format=json"
+docker start searxng
+curl -s "http://172.17.0.1:8080/search?q=test&format=json" | head -c 200
+node --version
+python3 --version
+npm install -g playwright && playwright install chromium
+ls /app
+cat /workspace/.clinerules
+rm -rf /workspace/weight-training-app
+ls
