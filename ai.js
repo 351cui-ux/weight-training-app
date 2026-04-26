@@ -1,101 +1,67 @@
-const AI = (() => {
-  const API_URL = 'http://127.0.0.1:8082/v1/chat/completions';
-  const SYSTEM_PROMPT = 'あなたはウエイトトレーニングのコーチです。短く一言で日本語で励ますコメントをしてください。';
-  const TIMER_SECONDS = 300;
-  let timerInterval = null;
-  let lastExercise = null;
-  let lastCompletion = false;
-  let timerRestarted = false;
-
-  function getState() {
-    return WTCore.safeGetState();
-  }
-
-  function getExerciseName() {
-    const state = getState();
-    if (!state) return null;
-    const currentSet = state.currentSet || {};
-    return currentSet.exercise || null;
-  }
-
-  function isTrigger(state) {
-    const currentExercise = getExerciseName();
-    const completed = state.currentSet && state.currentSet.completed;
-    const wasCompleted = lastCompletion;
-    const wasExercise = lastExercise;
-
-    if (completed !== wasCompleted) return true;
-    if (currentExercise !== wasExercise) return true;
-    return false;
-  }
-
-  function callAI() {
-    const state = getState();
-    if (!state) return;
-
-    const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
-    const currentSet = state.currentSet || {};
-    const message = `現在の運動：${currentSet.exercise || ''}`;
-    messages.push({ role: 'user', content: message });
-
-    fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'LFM2.5-350M-Q4_K_M.gguf', messages, max_tokens: 20 })
-    }).then(res => res.json()).then(data => {
-      if (data.choices && data.choices.length > 0) {
-        const response = data.choices[0].message.content;
-        displayAIResponse(response);
-      }
-    }).catch(() => {
-      // silent fail
-    });
-  }
-
-  function displayAIResponse(text) {
-    const tab = document.getElementById('ai-tab');
-    if (tab) {
-      tab.textContent = text;
+window.WTAI = (function() {
+    let remaining = 300;
+    let startTime = null;
+    let timerInterval = null;
+    let currentExerciseIndex = 0;
+    let completedSets = 0;
+    const now = () => new Date().getTime();
+    function getExercises() {
+        const catId = WTRecord._selectedCategoryId;
+        if (!catId) return [];
+        return (WTCore.safeGetState().exercises || []).filter(ex => ex.categoryId === catId);
     }
-  }
-
-  function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    timerRestarted = false;
-    lastExercise = getExerciseName();
-    lastCompletion = !!getState().currentSet?.completed;
-
-    timerInterval = setInterval(() => {
-      if (!timerRestarted && isTrigger(getState())) {
-        callAI();
-        timerRestarted = true;
-      }
-    }, 30000);
-  }
-
-  function onCompletion() {
-    if (isTrigger(getState())) {
-      callAI();
+    function renderExerciseList() {
+        const container = document.getElementById("ai-exercise-list");
+        if (!container) return;
+        const exercises = getExercises();
+        if (!exercises.length) { container.innerHTML = "<p>今日の記録タブでカテゴリを選択してください</p>"; return; }
+        const ex = exercises[currentExerciseIndex];
+        if (!ex) { container.innerHTML = "<p>全種目完了！</p>"; return; }
+        container.innerHTML = "<div style='padding:16px;border-radius:8px;background:#007aff;color:#fff;font-weight:bold;font-size:24px;text-align:center'>" + ex.name + "<br><span style='font-size:16px'>" + completedSets + "/3セット</span></div>";
     }
-    startTimer();
-  }
-
-  function onExerciseChange() {
-    if (isTrigger(getState())) {
-      callAI();
-    }
-    startTimer();
-  }
-
-  function init() {
-    const app = document.getElementById('wt-app');
-    if (app) {
-      app.addEventListener('completion', onCompletion);
-      app.addEventListener('exercise-change', onExerciseChange);
-    }
-    startTimer();
-  }
-
-  return { init };
+    return {
+        init: function() { this.updateTimerDisplay(); this.callAI(); },
+        startTimer: function() {
+            renderExerciseList();
+            if (timerInterval) clearInterval(timerInterval);
+            startTime = now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((now() - startTime) / 1000);
+                remaining = Math.max(0, 300 - elapsed);
+                this.updateTimerDisplay();
+                if (remaining === 0) { startTime = now(); remaining = 300; }
+            }, 500);
+        },
+        _reset: function() { currentExerciseIndex = 0; completedSets = 0; renderExerciseList(); },
+        completeSet: function() {
+            completedSets++;
+            if (completedSets >= 3) { completedSets = 0; currentExerciseIndex++; }
+            renderExerciseList();
+        },
+        updateTimerDisplay: function() {
+            const display = document.getElementById("ai-timer-display");
+            if (!display) return;
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            display.style.transition = "all 0.5s";
+            if (remaining % 60 === 0 || remaining === 300) {
+                display.style.fontSize = "160px"; display.style.fontWeight = "bold"; display.style.color = "#ff4444";
+            } else {
+                display.style.fontSize = "72px"; display.style.fontWeight = "normal"; display.style.color = "#00aa00";
+            }
+            display.innerText = m + ":" + String(s).padStart(2, "0");
+        },
+        callAI: function() {
+            const prompt = "世界の著名人、歴史上の人物や映画、小説の有名なセリフや名言と出典を一つだけ出力して。前置き・説明・リスト不要。セリフ本文と出典のみ。日本語で。";
+            fetch("/llama/v1/chat/completions", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({model:"local",messages:[{role:"user",content:prompt}],max_tokens:100})
+            }).then(r=>r.json()).then(d=>{
+                const comment = document.getElementById("ai-comment");
+                const text = d.choices[0].message.content; comment.innerText = ""; let i = 0; const t = setInterval(() => { if(i < text.length){ comment.innerText += text[i++]; } else { clearInterval(t); } }, 50);
+                setTimeout(() => window.WTAI.callAI(), 30000);
+            }).catch(() => { setTimeout(() => window.WTAI.callAI(), 30000); });
+        }
+    };
 })();
-window.WTAI = WTAI;

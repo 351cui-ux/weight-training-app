@@ -1,113 +1,69 @@
-// History module - 履歴タブロジック
-// DOM-only re-render, business logic inside history feature only
-
 const WTHistory = {
-  init() {
-    this._initTabSwitch();
-    this._render();
-  },
-
-  _initTabSwitch() {
-    const tabBtn = document.getElementById('history-tab-btn');
-    if (!tabBtn) return;
-
-    tabBtn.addEventListener('click', () => {
-      this._render();
-    });
-  },
-
+  init() {},
   _render() {
-    const container = document.getElementById('history-container');
-    if (!container) return;
-
-    const records = (WTCore.safeGetState().records || []);
-    const categories = (WTCore.safeGetState().categories || []);
-
-    if (records.length === 0) {
-      container.innerHTML = '<p class="empty-message">履歴がありません</p>';
-      return;
-    }
-
-    const grouped = this._groupRecordsByExercise(records, categories);
-    container.innerHTML = this._generateHTML(grouped);
-  },
-
-  _groupRecordsByExercise(records, categories) {
-    const exerciseMap = {};
-
-    records.forEach(record => {
-      if (!exerciseMap[record.exerciseId]) {
-        exerciseMap[record.exerciseId] = {
-          exerciseId: record.exerciseId,
-          exerciseName: record.exerciseName,
-          categoryName: record.categoryName,
-          records: []
-        };
-      }
-      exerciseMap[record.exerciseId].records.push(record);
+    const container = document.getElementById("history-container");
+    const records = WTCore.safeGetState().records || [];
+    const categories = WTCore.safeGetState().categories || [];
+    const grouped = {};
+    records.forEach(r => {
+      if (!grouped[r.exerciseId]) grouped[r.exerciseId] = { exerciseName: r.exerciseName, categoryName: r.categoryName, records: [] };
+      grouped[r.exerciseId].records.push(r);
     });
-
-    Object.values(exerciseMap).forEach(group => {
-      group.records.sort((a, b) => new Date(b.date) - new Date(a.date));
-    });
-
-    return Object.values(exerciseMap);
-  },
-
-  _calculateIntervalDays(lastRecordDateStr, todayStr) {
-    const lastDate = new Date(lastRecordDateStr);
-    const today = new Date(todayStr);
-
-    today.setHours(0, 0, 0, 0);
-    lastDate.setHours(0, 0, 0, 0);
-
-    const diffTime = today.getTime() - lastDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
-  },
-
-  _getIntervalEmoji(intervalDays) {
-    if (intervalDays <= 4) return '🍀';
-    if (intervalDays <= 7) return '❗️';
-    return '🔥';
-  },
-
-  _formatSets(sets) {
-    return sets.map(set => `${set.weight}kg × ${set.reps}`).join(', ');
-  },
-
-  _generateHTML(exercises) {
-    let html = '<ul class="history-list">';
-
-    exercises.forEach(group => {
-      const lastRecord = group.records[0];
-      const today = new Date().toISOString().slice(0, 10);
-      const intervalDays = this._calculateIntervalDays(lastRecord.date, today);
-      const emoji = this._getIntervalEmoji(intervalDays);
-
-      html += `<li class="history-item">
-        <div class="history-header">
-          <span class="exercise-name">${group.exerciseName}</span>
-          <span class="category-name">${group.categoryName}</span>
-          <span class="interval-emoji">${emoji}</span>
-        </div>
-        <ul class="history-sets">
-      `;
-
-      group.records.forEach(record => {
-        html += `<li class="history-set">
-          <span class="set-date">${record.date}</span>
-          <span class="set-data">${this._formatSets(record.sets)}</span>
-        </li>`;
+    Object.values(grouped).forEach(g => g.records.sort((a,b) => new Date(b.date)-new Date(a.date)));
+    const today = new Date().toISOString().slice(0,10);
+    const lines = [];
+    categories.forEach(cat => {
+      const exs = Object.values(grouped).filter(g => g.categoryName === cat.name);
+      lines.push({text: "## " + cat.name, cat: true});
+      exs.forEach(g => {
+        const r = g.records[0];
+        const days = Math.ceil((new Date(today)-new Date(r.date))/86400000);
+        const emoji = days <= 4 ? "🍀" : days <= 7 ? "❗️" : "🔥";
+        const sets = r.sets.map(s => s.weight+"kg×"+s.reps).join(" ");
+        lines.push({text: emoji+" "+g.exerciseName+" | "+r.date+" | "+sets, cat: false});
       });
-
-      html += `</ul>
-      </li>`;
     });
-
-    html += '</ul>';
-    return html;
+    container.innerHTML = "<div id='ht-wrap' style='font-family:monospace;padding:12px'></div>";
+    const wrap = document.getElementById("ht-wrap");
+    let i = 0;
+    function next() {
+      if (i >= lines.length) return;
+      const l = lines[i++];
+      const d = document.createElement("div");
+      d.style.color = l.cat ? "#007aff" : "";
+      d.style.marginTop = l.cat ? "8px" : "0";
+      d.textContent = l.text;
+      d.style.opacity = "0";
+      wrap.appendChild(d);
+      requestAnimationFrame(() => {
+        d.style.transition = "opacity 0.3s";
+        d.style.opacity = "1";
+      });
+      setTimeout(next, 120);
+    }
+    next();
+    // AIコメント
+    const commentEl = document.getElementById('history-ai-comment');
+    if (commentEl) {
+      const state = WTCore.safeGetState();
+      const records = state.records || [];
+      const exercises = state.exercises || [];
+      const today = new Date().toISOString().slice(0,10);
+      const summary = exercises.map(function(ex) {
+        const last = records.filter(function(r){ return r.exerciseId === ex.id; }).sort(function(a,b){ return new Date(b.date)-new Date(a.date); })[0];
+        const days = last ? Math.ceil((new Date(today)-new Date(last.date))/86400000) : 999;
+        return ex.name + ': ' + (last ? days + '日前' : '記録なし');
+      }).join(', ');
+      const prompt = '筋トレ管理AIです。以下の種目の最終実施日を見て、長期間実施していない種目があれば具体的に指摘してください。なければ短い励ましを。50文字以内。種目:' + summary;
+      commentEl.textContent = 'AI分析中...';
+      fetch('/llama/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({model:'local',messages:[{role:'user',content:prompt}],max_tokens:100})
+      }).then(function(r){ return r.json(); }).then(function(d){
+        commentEl.textContent = d.choices[0].message.content;
+      }).catch(function(){ commentEl.textContent = ''; });
+    }
   }
 };
 window.WTHistory = WTHistory;

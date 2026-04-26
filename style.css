@@ -14,6 +14,8 @@ html {
 }
 
 body {
+  background-color: #000000;
+  color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -176,6 +178,12 @@ ul li:last-child {
   padding: 4px 8px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+.tab-bar__tab.active .tab-bar__label {
+  text-decoration: underline;
 }
 
 .tab-bar__icon {
@@ -191,15 +199,13 @@ ul li:last-child {
 }
 
 .tab-bar__label {
-  font-size: 10px;
-  color: #8e8e93;
+  font-size: 16px;
+  color: #333333;
   text-align: center;
   line-height: 1.2;
 }
 
-.tab-bar__tab.active .tab-bar__label {
-  color: #007aff;
-}
+
 
 /* Navigation */
 nav {
@@ -275,6 +281,9 @@ nav a {
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
+  * { color: #ffffff; }
+  input, select, textarea { color: #ffffff; background-color: #1c1c1e; }
+  select, h3 { color: #ffffff; }
   body {
     background-color: #000000;
     color: #ffffff;
@@ -321,10 +330,13 @@ nav a {
   }
 
   .tab-bar__label {
-    color: #8e8e93;
+    color: #333333;
   }
 
   nav {
     border-bottom: 1px solid #38383a;
   }
 }
+
+.category-btn { background: #e5e5ea; }
+.category-btn.active { background: #007aff; color: #fff; }
