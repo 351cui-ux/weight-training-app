@@ -340,3 +340,80 @@ nav a {
 
 .category-btn { background: #e5e5ea; }
 .category-btn.active { background: #007aff; color: #fff; }
+
+/* Set Row - 1行レイアウト */
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: nowrap;
+}
+
+.set-row input {
+  width: 80px !important;
+  min-width: 0;
+  flex-shrink: 0;
+  padding: 8px;
+}
+
+.set-row button {
+  background: none;
+  border: none;
+  color: #007aff;
+  font-size: 15px;
+  padding: 8px 4px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* AI タブ */
+.ai-model-loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ai-model-loader input[type="file"] {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  padding: 8px;
+}
+
+.ai-model-loader button {
+  background: none;
+  border: none;
+  color: #007aff;
+  font-size: 15px;
+  padding: 8px 4px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+#ai-comment {
+  font-size: 17px !important;
+  margin-top: 16px;
+}
+
+.ai-model-loader {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e5ea;
+}
+
+.ai-model-loader input[type="file"] {
+  font-size: 16px !important;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.ai-model-loader span#wllama-load-btn {
+  display: inline-block;
+  color: #007aff;
+  font-size: 16px;
+  padding: 8px 0;
+  cursor: pointer;
+}

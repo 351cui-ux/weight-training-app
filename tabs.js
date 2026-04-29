@@ -34,7 +34,8 @@ const WTTabs = {
     this._currentTab = tabName;
     const next = this._tabContents.get(tabName);
     if (next) next.classList.add("active");
-    if (tabName === 'ai' && window.WTAI) WTAI.startTimer();
+    if (this._currentTab === 'ai' && tabName !== 'ai' && window.WTAI) WTAI.stopAI();
+    if (tabName === 'ai' && window.WTAI) { WTAI.startTimer(); WTAI.resumeAI(); }
     if (tabName === 'history' && window.WTHistory) WTHistory._render();
     document.querySelectorAll(".tab-bar__tab").forEach(item => {
       item.classList.toggle("active", item.dataset.tab === tabName);

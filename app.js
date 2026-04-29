@@ -48,6 +48,18 @@
       WTAI.init();
       modules.push('WTAI');
       console.log('WTAI initialized');
+    } else {
+      // moduleスクリプトの遅延対応: 最大2秒リトライ
+      let retries = 0;
+      const waitAI = setInterval(() => {
+        if (window.WTAI) {
+          WTAI.init();
+          console.log('WTAI initialized (delayed)');
+          clearInterval(waitAI);
+        } else if (++retries > 20) {
+          clearInterval(waitAI);
+        }
+      }, 100);
     }
 
     // Initialize settings module

@@ -107,6 +107,12 @@ window.WTAI = (function() {
             }
             display.innerText = m + ":" + String(s).padStart(2, "0");
         },
+        stopAI: function() {
+            if (this._aiTimer) { clearTimeout(this._aiTimer); this._aiTimer = null; }
+        },
+        resumeAI: function() {
+            if (wllamaInstance) this.callAI();
+        },
         callAI: async function() {
             if (!wllamaInstance) return;
             const comment = document.getElementById("ai-comment");
@@ -132,11 +138,11 @@ window.WTAI = (function() {
                 let output = text.replace(prompt, "").trim();
                 output = output.replace(/```[\s\S]*?```/g,"").replace(/[#*`_~>]/g,"").trim();
                 comment.innerText = output || text.trim();
-                setTimeout(() => window.WTAI.callAI(), 20000);
+                this._aiTimer = setTimeout(() => window.WTAI.callAI(), 20000);
             } catch(e) {
                 comment.innerText = "エラー: " + e.message;
                 console.error("callAI ERROR:", e);
-                setTimeout(() => window.WTAI.callAI(), 20000);
+                this._aiTimer = setTimeout(() => window.WTAI.callAI(), 20000);
             }
         }
     };
