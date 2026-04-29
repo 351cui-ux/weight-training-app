@@ -4,8 +4,14 @@ const WTRecord = {
 
   init() {
     const dateInput = document.getElementById('record-date');
-    if (dateInput) { dateInput.value = new Date(Date.now()+9*3600000).toISOString().slice(0,10); dateInput.onchange = () => this._loadExistingRecord(); }
-    this._renderCategoryButtons(); [1,2,3,4].forEach(i=>{ const r=document.getElementById('record-set-'+i+'-reps'); if(r) r.oninput=()=>{ if(r.value>0&&window.WTAI) WTAI.completeSet(); }; });
+    if (dateInput) { dateInput.value = new Date(Date.now()+9*3600000).toISOString().slice(0,10); dateInput.onchange = () => { this._loadExistingRecord(); this._resetSetButtons(); }; }
+    this._renderCategoryButtons();
+    [1,2,3,4].forEach(i=>{
+      const w=document.getElementById('record-set-'+i+'-weight');
+      const r=document.getElementById('record-set-'+i+'-reps');
+      if(w) w.addEventListener('blur',()=>{ if(w.value) w.value=w.value; });
+      if(r) { r.oninput=()=>{ if(r.value>0&&window.WTAI) WTAI.completeSet(); }; r.addEventListener('blur',()=>{ if(r.value) r.value=r.value; }); }
+    });
     const btn = document.getElementById('record-save-btn');
     if (btn) { btn.replaceWith(btn.cloneNode(true)); const newBtn = document.getElementById('record-save-btn'); newBtn.addEventListener('click', () => this._saveRecord()); }
   },
@@ -88,6 +94,12 @@ const WTRecord = {
     if (window.WTAI) WTAI.callAI();
   },
 
+  _resetSetButtons() {
+    [1,2,3,4].forEach(i => {
+      const btn = document.querySelector('[onclick="WTRecord._saveSet(' + i + ')"]');
+      if (btn) { btn.style.fontWeight = ''; btn.style.textDecoration = ''; btn.dataset.done = '0'; }
+    });
+  },
   _clearSets() {
     for (let i = 1; i <= this._maxSets; i++) {
       const w = document.getElementById(`record-set-${i}-weight`);
@@ -123,6 +135,18 @@ WTRecord._loadExistingRecord = function() {
 };
 
 WTRecord._saveSet = function(setNum) {
+    const btn = document.querySelector('[onclick="WTRecord._saveSet(' + setNum + ')"]');
+    if (btn) {
+        if (btn.dataset.done === '1') {
+            btn.style.fontWeight = '';
+            btn.style.textDecoration = '';
+            btn.dataset.done = '0';
+        } else {
+            btn.style.fontWeight = 'bold';
+            btn.style.textDecoration = 'underline';
+            btn.dataset.done = '1';
+        }
+    }
     const date = document.getElementById('record-date')?.value;
     if (!date) { return; }
     const dropdown = document.getElementById('record-exercise-dropdown');

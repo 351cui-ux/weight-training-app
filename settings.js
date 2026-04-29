@@ -35,19 +35,19 @@
         const i = exercises.indexOf(ex);
         return "<div style=padding:8px;display:flex;gap:4px;align-items:center>" +
           "<span style=flex:1>" + escapeHtml(ex.name) + "</span>" +
-          "<button onclick=WTSettings.moveExercise(" + i + ",-1)>↑</button>" +
-          "<button onclick=WTSettings.moveExercise(" + i + ",1)>↓</button>" +
-          "<button onclick=WTSettings.editExercise(" + i + ")>編集</button>" +
-          "<button onclick=WTSettings.deleteExercise(" + i + ")>削除</button></div>";
+          "<button style='font-size:12px;padding:2px 4px;min-height:28px;min-width:28px' onclick=WTSettings.moveExercise(" + i + ",-1)>↑</button>" +
+          "<button style='font-size:12px;padding:2px 4px;min-height:28px;min-width:28px' onclick=WTSettings.moveExercise(" + i + ",1)>↓</button>" +
+          "<button style='font-size:12px;padding:2px 4px;min-height:28px;min-width:28px' onclick=WTSettings.editExercise(" + i + ")>編集</button>" +
+          "<button style='font-size:12px;padding:2px 4px;min-height:28px;min-width:28px' onclick=WTSettings.deleteExercise(" + i + ")>削除</button></div>";
       }).join("");
       return "<details><summary style=cursor:pointer;padding:8px>" + escapeHtml(cat.name) + " (" + exs.length + ")</summary>" + items + "</details>";
     }).join("");
-    const catSelect = "<select id=newExCatSelect>" + catOpts("") + "</select>";
+    const catSelect = "<select id=newExCatSelect style='min-width:80px'>" + catOpts("") + "</select>";
     container.innerHTML = byCategory +
-      "<div style=margin-top:8px;display:flex;gap:8px;align-items:center>" +
-      "<input id=newExerciseName placeholder=種目名 style='flex:3;min-width:200px'>" +
-      catSelect +
-      "<button onclick=WTSettings.addExercise()>+</button></div>";
+      "<div style='margin-top:8px'>" +
+      "<input id=newExerciseName placeholder=種目名 style='width:100%;margin-bottom:8px'>" +
+      "<div style='display:flex;gap:8px;align-items:center'>" + catSelect + "<button onclick=WTSettings.addExercise()>+</button></div>" +
+      "</div>";
   }
 
   function init() {

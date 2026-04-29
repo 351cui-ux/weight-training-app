@@ -9,8 +9,7 @@ import('./esm/index.js').then(function(m) {
 });
 
 window.WTAI = (function() {
-    let remaining = 300;
-    let startTime = null;
+    let elapsed = 0;
     let timerInterval = null;
     let currentExerciseIndex = 0;
     let completedSets = 0;
@@ -80,13 +79,11 @@ window.WTAI = (function() {
         startTimer: function() {
             renderExerciseList();
             if (timerInterval) clearInterval(timerInterval);
-            startTime = now();
+            elapsed = 0;
             timerInterval = setInterval(() => {
-                const elapsed = Math.floor((now() - startTime) / 1000);
-                remaining = Math.max(0, 300 - elapsed);
+                elapsed++;
                 this.updateTimerDisplay();
-                if (remaining === 0) { startTime = now(); remaining = 300; }
-            }, 500);
+            }, 1000);
         },
         _reset: function() { currentExerciseIndex = 0; completedSets = 0; renderExerciseList(); },
         completeSet: function() {
@@ -96,29 +93,48 @@ window.WTAI = (function() {
         },
         updateTimerDisplay: function() {
             const display = document.getElementById("ai-timer-display");
+            const ring = document.getElementById("ai-timer-ring");
             if (!display) return;
-            const m = Math.floor(remaining / 60);
-            const s = remaining % 60;
-            display.style.transition = "all 0.5s";
-            if (remaining % 60 === 0 || remaining === 300) {
-                display.style.fontSize = "160px"; display.style.fontWeight = "bold"; display.style.color = "#ff4444";
+            const REST = 300;
+            const CIRC = 565;
+            if (elapsed <= REST) {
+                const remaining = REST - elapsed;
+                const m = Math.floor(remaining / 60);
+                const s = remaining % 60;
+                display.style.color = "#1c1c1e";
+                display.innerText = m + ":" + String(s).padStart(2, "0");
+                if (ring) {
+                    const offset = CIRC * (1 - remaining / REST);
+                    ring.style.stroke = "#007aff";
+                    ring.setAttribute("stroke-dashoffset", offset);
+                }
             } else {
-                display.style.fontSize = "72px"; display.style.fontWeight = "normal"; display.style.color = "#00aa00";
+                const over = elapsed - REST;
+                const m = Math.floor(over / 60);
+                const s = over % 60;
+                display.style.color = "#ff3b30";
+                display.innerText = m + ":" + String(s).padStart(2, "0");
+                if (ring) {
+                    ring.style.stroke = "#ff3b30";
+                    ring.setAttribute("stroke-dashoffset", CIRC);
+                }
             }
-            display.innerText = m + ":" + String(s).padStart(2, "0");
         },
         stopAI: function() {
+            this._aiStopped = true;
             if (this._aiTimer) { clearTimeout(this._aiTimer); this._aiTimer = null; }
         },
         resumeAI: function() {
+            this._aiStopped = false;
             if (wllamaInstance) this.callAI();
         },
         callAI: async function() {
+            if (this._aiStopped) return;
             if (!wllamaInstance) return;
             const comment = document.getElementById("ai-comment");
-            const topics = ["筋トレ","サボり","二度寝","食欲","怠惰","言い訳","腹筋","締め切り","二日酔い","ダイエット","月曜日","残業","風呂","財布","昼寝"];
+            const topics = ["筋トレ","プロテイン","腹筋","スクワット","ランニング","ダイエット","糖質","脂肪燃焼","筋肉","体重","食事制限","有酸素運動","無酸素運動","基礎代謝","体脂肪"];
             const topic = topics[Math.floor(Math.random() * topics.length)];
-            const prompt = "<|im_start|>user\n「" + topic + "」について世界の著名人、歴史上の人物や映画、小説の有名なセリフや名言と迷言を一つ日本語で。前置き不要。セリフと出典のみ。<|im_end|>\n<|im_start|>assistant\n";
+            const prompt = "<|im_start|>user\n「" + topic + "」について、20文字以50文字以内で面白いウソ情報を作って。最後に「知ってた？」をつけて<|im_end|>\n<|im_start|>assistant\n";
             try {
                 comment.innerText = "生成中...";
                 await wllamaInstance.kvClear();
@@ -130,15 +146,24 @@ window.WTAI = (function() {
                 await wllamaInstance.loadModel([lastModelFile], { n_ctx: 512, seed: Math.floor(Math.random() * 999999) });
                 console.log("CALLING createCompletion");
                 const text = await wllamaInstance.createCompletion(prompt, {
-                    nPredict: 80,
+                    nPredict: 40,
                     useCache: false,
-                    sampling: { temp: 1.0, top_k: 40, top_p: 0.95, min_p: 0.05, penalty_repeat: 1.1 }
+                    sampling: { temp: 1.5, top_k: 40, top_p: 0.95, min_p: 0.05, penalty_repeat: 1.1 }
                 });
                 console.log("RAW OUTPUT:", text);
                 let output = text.replace(prompt, "").trim();
                 output = output.replace(/```[\s\S]*?```/g,"").replace(/[#*`_~>]/g,"").trim();
-                comment.innerText = output || text.trim();
-                this._aiTimer = setTimeout(() => window.WTAI.callAI(), 20000);
+                output = output || text.trim();
+                // 最初の文だけ抽出して語尾を付ける
+                output = output.split(/[\u3002\uff01\uff1f]/)[0].trim();
+                if (output) output = output + "\u306a\u3093\u3060\u3063\u3066\u3001\u77e5\u3063\u3066\u305f\uff1f";
+                comment.innerText = "";
+                let i = 0;
+                const tw = setInterval(() => {
+                    if (this._aiStopped) { clearInterval(tw); return; }
+                    if (i < output.length) { comment.innerText += output[i]; i++; }
+                    else { clearInterval(tw); this._aiTimer = setTimeout(() => window.WTAI.callAI(), 20000); }
+                }, 80);
             } catch(e) {
                 comment.innerText = "エラー: " + e.message;
                 console.error("callAI ERROR:", e);

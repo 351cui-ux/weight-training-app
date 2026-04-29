@@ -95,13 +95,13 @@ section h2 {
 button {
   min-width: 44px;
   min-height: 44px;
-  padding: 12px 20px;
+  padding: 8px 12px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   border: none;
   border-radius: 10px;
-  background-color: #007aff;
-  color: #ffffff;
+  background: none;
+  color: #1c1c1e;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -281,65 +281,24 @@ nav a {
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
-  * { color: #ffffff; }
-  input, select, textarea { color: #ffffff; background-color: #1c1c1e; }
-  select, h3 { color: #ffffff; }
-  body {
-    background-color: #000000;
-    color: #ffffff;
-  }
-
-  header {
-    background: #000000;
-    border-bottom: 1px solid #38383a;
-  }
-
-  .card {
-    background: #1c1c1e;
-  }
-
-  .card h3,
-  .card p,
-  section h2 {
-    color: #ffffff;
-  }
-
-  input,
-  textarea,
-  select {
-    background-color: #1c1c1e;
-    border-color: #38383a;
-    color: #ffffff;
-  }
-
-  ul li {
-    border-bottom: 1px solid #38383a;
-  }
-
-  .tab-bar {
-    background: #000000;
-    border-top: 1px solid #38383a;
-  }
-
-  .tab-bar__icon {
-    fill: #8e8e93;
-  }
-
-  .tab-bar__tab.active .tab-bar__icon {
-    fill: #007aff;
-  }
-
-  .tab-bar__label {
-    color: #333333;
-  }
-
-  nav {
-    border-bottom: 1px solid #38383a;
-  }
+  * { color: #1c1c1e; }
+  body { background-color: #ffffff; color: #1c1c1e; }
+  header { background: #ffffff; border-bottom: 1px solid #e5e5ea; }
+  .card { background: #f2f2f7; }
+  .card h3, .card p, section h2 { color: #1c1c1e; }
+  input, textarea, select { background-color: #ffffff; border-color: #d1d1d6; color: #1c1c1e; }
+  ul li { border-bottom: 1px solid #e5e5ea; color: #1c1c1e; }
+  .tab-bar { background: #ffffff; border-top: 1px solid #e5e5ea; }
+  .tab-bar__label { color: #1c1c1e; }
+  .tab-bar__tab.active .tab-bar__label { color: #1c1c1e; font-weight: 700; text-decoration: underline; }
+  .tab-bar__icon { fill: #8e8e93; }
+  .tab-bar__tab.active .tab-bar__icon { fill: #1c1c1e; }
+  nav { background: #ffffff; border-bottom: 1px solid #e5e5ea; }
+  button { color: #1c1c1e; background: none; }
 }
 
-.category-btn { background: #e5e5ea; }
-.category-btn.active { background: #007aff; color: #fff; }
+.category-btn { background: none; border: 1px solid #d1d1d6; color: #1c1c1e; margin: 4px; }
+.category-btn.active { background: none; border: 1px solid #1c1c1e; color: #1c1c1e; font-weight: 700; text-decoration: underline; }
 
 /* Set Row - 1行レイアウト */
 .set-row {

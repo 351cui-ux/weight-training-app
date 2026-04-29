@@ -39,7 +39,7 @@ const WTHistory = {
         d.style.transition = "opacity 0.3s";
         d.style.opacity = "1";
       });
-      setTimeout(next, 120);
+      setTimeout(next, 200);
     }
     next();
     // AIコメント
