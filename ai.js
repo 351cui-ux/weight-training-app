@@ -132,9 +132,9 @@ window.WTAI = (function() {
             if (this._aiStopped) return;
             if (!wllamaInstance) return;
             const comment = document.getElementById("ai-comment");
-            const topics = ["筋トレ","プロテイン","腹筋","スクワット","ランニング","ダイエット","糖質","脂肪燃焼","筋肉","体重","食事制限","有酸素運動","無酸素運動","基礎代謝","体脂肪"];
+            const topics = ["筋トレ","健康","食事","栄養","身体","筋肉","代謝","運動","アンチエイジング","プロテイン","体脂肪","カロリー","ビタミン","睡眠","ストレッチ"];
             const topic = topics[Math.floor(Math.random() * topics.length)];
-            const prompt = "<|im_start|>user\n「" + topic + "」について、20文字以50文字以内で面白いウソ情報を作って。最後に「知ってた？」をつけて<|im_end|>\n<|im_start|>assistant\n";
+            const prompt = "<|im_start|>user\n「" + topic + "」について150字以内で日本語でつぶやいて。<|im_end|>\n<|im_start|>assistant\n";
             try {
                 comment.innerText = "生成中...";
                 await wllamaInstance.kvClear();
@@ -146,7 +146,7 @@ window.WTAI = (function() {
                 await wllamaInstance.loadModel([lastModelFile], { n_ctx: 512, seed: Math.floor(Math.random() * 999999) });
                 console.log("CALLING createCompletion");
                 const text = await wllamaInstance.createCompletion(prompt, {
-                    nPredict: 40,
+                    nPredict: 80,
                     useCache: false,
                     sampling: { temp: 1.5, top_k: 40, top_p: 0.95, min_p: 0.05, penalty_repeat: 1.1 }
                 });
@@ -154,9 +154,10 @@ window.WTAI = (function() {
                 let output = text.replace(prompt, "").trim();
                 output = output.replace(/```[\s\S]*?```/g,"").replace(/[#*`_~>]/g,"").trim();
                 output = output || text.trim();
+                output = output.replace(/^[「」【】『』]+/, "").trim();
                 // 最初の文だけ抽出して語尾を付ける
                 output = output.split(/[\u3002\uff01\uff1f]/)[0].trim();
-                if (output) output = output + "\u306a\u3093\u3060\u3063\u3066\u3001\u77e5\u3063\u3066\u305f\uff1f";
+                if (output) output = output + "、知ってた？";
                 comment.innerText = "";
                 let i = 0;
                 const tw = setInterval(() => {
