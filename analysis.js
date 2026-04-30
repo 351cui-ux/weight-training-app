@@ -1,8 +1,9 @@
 const WTAnalysis = (() => {
   let charts = [];
-  function init() { if(window.Chart) { const dark = window.matchMedia("(prefers-color-scheme: dark)").matches; Chart.defaults.color = dark ? "#ffffff" : "#333333"; } _renderCategorySelector(); _render(); }
+  function init() { if(window.Chart) { Chart.defaults.color = "#333333"; } _renderCategorySelector(); _render(); }
   function _renderCategorySelector() {
     const container = document.getElementById("analysis-exercise-select");
+    if (document.getElementById("analysis-category-dropdown")) return;
     container.innerHTML = "";
     const categories = WTCore.safeGetState().categories || [];
     const sel = document.createElement("select");
@@ -19,6 +20,7 @@ const WTAnalysis = (() => {
     charts.forEach(c => c.destroy()); charts = [];
     const chartArea = document.getElementById("analysis-charts");
     chartArea.innerHTML = "";
+    if (!catId) return;
     const state = WTCore.safeGetState();
     const exercises = (state.exercises || []).filter(ex => ex.categoryId === catId);
     const records = state.records || [];
@@ -41,7 +43,7 @@ const WTAnalysis = (() => {
           { label: "重量(kg)", data: weights, borderColor: "#007aff", yAxisID: "y", tension: 0.3 },
           { label: "回数", data: reps, borderColor: "#ff9500", yAxisID: "y2", tension: 0.3 }
         ]},
-        options: { responsive: true, color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#ffffff' : '#333333', scales: {
+        options: { responsive: true, color: '#333333', scales: {
           y: { position: "left", title: { display: true, text: "kg" }, ticks: { stepSize: 1.25 } },
           y2: { position: "right", title: { display: true, text: "回" }, ticks: { stepSize: 1 }, grid: { drawOnChartArea: false } }
         }}

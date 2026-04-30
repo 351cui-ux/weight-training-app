@@ -36,6 +36,7 @@ const WTRecord = {
         this._selectedCategoryId = cat.id; if(window.WTAI){ WTAI._reset(); }
         this._renderExerciseDropdown(cat.id);
         this._clearSets();
+        this._resetSetButtons();
       };
       container.appendChild(btn);
     });
@@ -45,7 +46,7 @@ const WTRecord = {
     const dropdown = document.getElementById('record-exercise-dropdown');
     if (!dropdown) return;
     const exercises = (WTCore.safeGetState().exercises || []).filter(ex => ex.categoryId === categoryId);
-    dropdown.innerHTML = '<option value="">種目を選択</option>'; dropdown.onchange = () => this._loadExistingRecord();
+    dropdown.innerHTML = '<option value="">種目を選択</option>'; dropdown.onchange = () => { this._loadExistingRecord(); this._resetSetButtons(); };
     exercises.forEach(ex => {
       const opt = document.createElement('option');
       opt.value = ex.id;
@@ -90,7 +91,7 @@ const WTRecord = {
     
     this._clearAll();
 
-    if (window.WTAnalysis) WTAnalysis._render();
+    if (window.WTAnalysis) { WTAnalysis._renderCategorySelector(); WTAnalysis._render(); }
     if (window.WTAI) WTAI.callAI();
   },
 
@@ -112,7 +113,7 @@ const WTRecord = {
   _clearAll() {
     document.getElementById('record-date').value = new Date(Date.now()+9*3600000).toISOString().slice(0,10);
     const dropdown = document.getElementById('record-exercise-dropdown');
-    if (dropdown) { dropdown.innerHTML = '<option value="">種目を選択</option>'; dropdown.onchange = () => this._loadExistingRecord(); }
+    if (dropdown) { dropdown.innerHTML = '<option value="">種目を選択</option>'; dropdown.onchange = () => { this._loadExistingRecord(); this._resetSetButtons(); }; }
     this._clearSets();
   }
 };
@@ -135,6 +136,8 @@ WTRecord._loadExistingRecord = function() {
 };
 
 WTRecord._saveSet = function(setNum) {
+    const dropdown = document.getElementById('record-exercise-dropdown');
+    if (!dropdown?.value) { return; }
     const btn = document.querySelector('[onclick="WTRecord._saveSet(' + setNum + ')"]');
     if (btn) {
         if (btn.dataset.done === '1') {
@@ -149,7 +152,6 @@ WTRecord._saveSet = function(setNum) {
     }
     const date = document.getElementById('record-date')?.value;
     if (!date) { return; }
-    const dropdown = document.getElementById('record-exercise-dropdown');
     const exerciseId = dropdown?.value;
     if (!exerciseId) { return; }
     const weight = parseFloat(document.getElementById('record-set-'+setNum+'-weight')?.value);
@@ -173,5 +175,5 @@ WTRecord._saveSet = function(setNum) {
     WTCore.safeSetState({...state, records});
     if (window.WTAI) WTAI.completeSet();
 
-    if (window.WTAnalysis) WTAnalysis._render();
+    if (window.WTAnalysis) { WTAnalysis._renderCategorySelector(); WTAnalysis._render(); }
 };
